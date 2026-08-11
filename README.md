@@ -8,7 +8,7 @@ React + TypeScript frontend, Spring Boot API, MySQL — all three run together w
 
 See [`docs/screenshots/`](docs/screenshots/).
 
-## Features
+# Features
 
 - **3 reports** — Users, Departments, Projects — each a column-config-driven data table with click-to-sort on every column and client-side search.
 - **Entity detail pages** (`/users/:id`, `/departments/:id`, `/projects/:id`) — click any row, or any related person/department/project shown on a detail page, to navigate straight to it.
@@ -18,12 +18,12 @@ See [`docs/screenshots/`](docs/screenshots/).
 
 ## Tech stack
 
-| Layer | Stack |
-|---|---|
-| Backend | Java 17, Spring Boot 3.2, Spring Data JPA, Flyway, MySQL 8 (`com.mysql:mysql-connector-j`) |
-| Frontend | React 18, TypeScript, Vite, React Router v6, TanStack Query v5 |
-| Database | MySQL 8, runs entirely in Docker — no local install needed |
-| Orchestration | Docker Compose |
+| Layer         | Stack                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| Backend       | Java 17, Spring Boot 3.2, Spring Data JPA, Flyway, MySQL 8 (`com.mysql:mysql-connector-j`) |
+| Frontend      | React 18, TypeScript, Vite, React Router v6, TanStack Query v5                               |
+| Database      | MySQL 8, runs entirely in Docker — no local install needed                                  |
+| Orchestration | Docker Compose                                                                               |
 
 No authentication — the portal is intentionally open (see `NOTES.txt`). No write endpoints; this is a read-only reporting tool.
 
@@ -100,12 +100,12 @@ Other frontend scripts: `npm run build` (typecheck + production build), `npm run
 
 All endpoints are read-only (`GET`). Full result sets are returned per report — no server-side pagination (see `NOTES.txt`).
 
-| Method | Endpoint | Returns |
-|---|---|---|
-| GET | `/api/reports` | Metadata for all 3 reports: `[{ id, name, description, endpoint, rowCount, lastUpdated }]` |
-| GET | `/api/reports/users` | `[{ id, name, email, role, status, createdDate, department, departmentId }]` |
-| GET | `/api/reports/departments` | `[{ id, name, manager, managerId, employeeCount, location }]` |
-| GET | `/api/reports/projects` | `[{ id, name, department, departmentId, owner, ownerId, status, startDate, endDate, memberIds }]` |
+| Method | Endpoint                     | Returns                                                                                             |
+| ------ | ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| GET    | `/api/reports`             | Metadata for all 3 reports:`[{ id, name, description, endpoint, rowCount, lastUpdated }]`         |
+| GET    | `/api/reports/users`       | `[{ id, name, email, role, status, createdDate, department, departmentId }]`                      |
+| GET    | `/api/reports/departments` | `[{ id, name, manager, managerId, employeeCount, location }]`                                     |
+| GET    | `/api/reports/projects`    | `[{ id, name, department, departmentId, owner, ownerId, status, startDate, endDate, memberIds }]` |
 
 The `*Id` / `memberIds` fields exist so the frontend can cross-link entities (e.g. render a department's manager as a clickable link) without any additional endpoints — the detail pages just cross-reference these three already-fetched lists client-side.
 

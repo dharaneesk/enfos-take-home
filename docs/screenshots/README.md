@@ -1,9 +1,25 @@
 # Screenshots / demo
 
-Placeholder for screenshots or a short demo recording of the portal:
+Short demo recordings of the portal.
 
-- Landing page (registry + live summary strip)
-- A report table (loading / populated / empty-search / error states)
-- An entity detail page showing the cross-linked relations (e.g. a department's manager, people, and current projects)
+## Initial setup
 
-Drop image or video files in this folder and reference them from the root `README.md` when available.
+`docker compose up --build` bringing up MySQL, the backend, and the frontend, ending on the landing page (registry + live summary strip).
+
+![Initial setup demo](initial-setup.gif)
+
+## Reporting page
+
+A report table in action — click-to-sort on every column, client-side search, and the populated state.
+
+![Reporting page demo](reporting-page.gif)
+
+## Interlinked data
+
+An entity detail page showing cross-linked relations (e.g. a department's manager, people, and current projects) and navigating between them.
+
+![Interlinked data demo](interlinked-data.gif)
+
+## Loading / error states
+
+![Loading and error state demo](loading-error-state.gif)
