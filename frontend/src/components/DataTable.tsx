@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 export interface DataTableColumn<T> {
   key: string;
@@ -13,6 +14,7 @@ interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   rows: T[];
   getRowId: (row: T) => string;
+  getRowHref?: (row: T) => string;
 }
 
 type SortDirection = "asc" | "desc";
@@ -29,8 +31,9 @@ function compareValues(a: string | number | null, b: string | number | null): nu
   return String(a).localeCompare(String(b), undefined, { sensitivity: "base" });
 }
 
-export function DataTable<T>({ columns, rows, getRowId }: DataTableProps<T>) {
+export function DataTable<T>({ columns, rows, getRowId, getRowHref }: DataTableProps<T>) {
   const [sort, setSort] = useState<SortState | null>(null);
+  const navigate = useNavigate();
 
   const sortColumn = sort ? columns.find((c) => c.key === sort.key) : undefined;
 
@@ -106,23 +109,42 @@ export function DataTable<T>({ columns, rows, getRowId }: DataTableProps<T>) {
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map((row) => (
-            <tr key={getRowId(row)}>
-              {columns.map((column) => {
-                const classNames = [
-                  column.sticky ? "sticky-col" : "",
-                  column.mono ? "mono-cell" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <td key={column.key} className={classNames || undefined}>
-                    {column.accessor(row)}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {sortedRows.map((row) => {
+            const href = getRowHref?.(row);
+
+            function handleKeyDown(event: KeyboardEvent<HTMLTableRowElement>) {
+              if (!href) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                navigate(href);
+              }
+            }
+
+            return (
+              <tr
+                key={getRowId(row)}
+                className={href ? "data-table-row--clickable" : undefined}
+                onClick={href ? () => navigate(href) : undefined}
+                onKeyDown={href ? handleKeyDown : undefined}
+                tabIndex={href ? 0 : undefined}
+                role={href ? "link" : undefined}
+              >
+                {columns.map((column) => {
+                  const classNames = [
+                    column.sticky ? "sticky-col" : "",
+                    column.mono ? "mono-cell" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  return (
+                    <td key={column.key} className={classNames || undefined}>
+                      {column.accessor(row)}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

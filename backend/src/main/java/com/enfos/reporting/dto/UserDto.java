@@ -11,6 +11,7 @@ public record UserDto(
         String role,
         UserStatus status,
         LocalDate createdDate,
-        String department
+        String department,
+        String departmentId
 ) {
 }

@@ -1,17 +1,18 @@
 -- ============================================================
--- Departments (10)
+-- Departments (10) — manager is assigned after users are seeded below,
+-- since each department's manager is a real user (circular FK).
 -- ============================================================
-INSERT INTO departments (id, name, manager_name, location, created_at, updated_at) VALUES
-('DEPT-001', 'Engineering',       'Sarah Chen',        'San Francisco, CA', '2023-01-10 09:00:00', '2026-07-28 14:22:00'),
-('DEPT-002', 'Product',           'Michael Torres',     'San Francisco, CA', '2023-01-10 09:00:00', '2026-06-15 11:05:00'),
-('DEPT-003', 'Design',            'Priya Nair',         'Austin, TX',        '2023-02-01 09:00:00', '2026-05-20 16:40:00'),
-('DEPT-004', 'Sales',             'David Kim',          'New York, NY',      '2023-01-15 09:00:00', '2026-08-01 10:15:00'),
-('DEPT-005', 'Marketing',         'Emma Rodriguez',     'New York, NY',      '2023-03-01 09:00:00', '2026-04-10 09:30:00'),
-('DEPT-006', 'People Ops',        'James Whitfield',    'Chicago, IL',       '2023-04-12 09:00:00', '2026-02-18 13:12:00'),
-('DEPT-007', 'Finance',           'Laura Bennett',      'Chicago, IL',       '2023-01-20 09:00:00', '2026-03-22 08:50:00'),
-('DEPT-008', 'Customer Success',  'Carlos Mendes',      'Austin, TX',        '2023-05-05 09:00:00', '2026-07-02 15:05:00'),
-('DEPT-009', 'IT',                'Nina Petrova',       'Denver, CO',        '2023-06-18 09:00:00', '2026-01-30 12:00:00'),
-('DEPT-010', 'Legal',             'Robert Hayes',       'Denver, CO',        '2023-08-09 09:00:00', '2025-12-11 10:45:00');
+INSERT INTO departments (id, name, location, created_at, updated_at) VALUES
+('DEPT-001', 'Engineering',       'San Francisco, CA', '2023-01-10 09:00:00', '2026-07-28 14:22:00'),
+('DEPT-002', 'Product',           'San Francisco, CA', '2023-01-10 09:00:00', '2026-06-15 11:05:00'),
+('DEPT-003', 'Design',            'Austin, TX',        '2023-02-01 09:00:00', '2026-05-20 16:40:00'),
+('DEPT-004', 'Sales',             'New York, NY',      '2023-01-15 09:00:00', '2026-08-01 10:15:00'),
+('DEPT-005', 'Marketing',         'New York, NY',      '2023-03-01 09:00:00', '2026-04-10 09:30:00'),
+('DEPT-006', 'People Ops',        'Chicago, IL',       '2023-04-12 09:00:00', '2026-02-18 13:12:00'),
+('DEPT-007', 'Finance',           'Chicago, IL',       '2023-01-20 09:00:00', '2026-03-22 08:50:00'),
+('DEPT-008', 'Customer Success',  'Austin, TX',        '2023-05-05 09:00:00', '2026-07-02 15:05:00'),
+('DEPT-009', 'IT',                'Denver, CO',        '2023-06-18 09:00:00', '2026-01-30 12:00:00'),
+('DEPT-010', 'Legal',             'Denver, CO',        '2023-08-09 09:00:00', '2025-12-11 10:45:00');
 
 -- ============================================================
 -- Users (42) — spread unevenly across departments, 2 unassigned
@@ -72,6 +73,22 @@ INSERT INTO users (id, name, email, role, status, created_date, department_id, c
 ('USR-1042', 'Priya Chandran',    'priya.chandran@enfos.io',    'Product Analyst',          'ACTIVE',   '2026-07-15', NULL,       '2026-07-15 09:00:00', '2026-08-08 10:00:00');
 
 -- ============================================================
+-- Department managers — each is the existing lead-role user already
+-- seeded within that department (real, clickable person; not a
+-- freestanding name).
+-- ============================================================
+UPDATE departments SET manager_user_id = 'USR-1003' WHERE id = 'DEPT-001'; -- Chloe Martin, Engineering Manager
+UPDATE departments SET manager_user_id = 'USR-1010' WHERE id = 'DEPT-002'; -- Jack Sullivan, Senior Product Manager
+UPDATE departments SET manager_user_id = 'USR-1015' WHERE id = 'DEPT-003'; -- Olivia Grant, Design Lead
+UPDATE departments SET manager_user_id = 'USR-1019' WHERE id = 'DEPT-004'; -- Samuel Price, Sales Manager
+UPDATE departments SET manager_user_id = 'USR-1025' WHERE id = 'DEPT-005'; -- Yusuf Demir, Marketing Manager
+UPDATE departments SET manager_user_id = 'USR-1029' WHERE id = 'DEPT-006'; -- Caleb Johnston, HR Business Partner
+UPDATE departments SET manager_user_id = 'USR-1031' WHERE id = 'DEPT-007'; -- Edward Lambert, Controller
+UPDATE departments SET manager_user_id = 'USR-1034' WHERE id = 'DEPT-008'; -- Hannah Brooks, Customer Success Manager
+UPDATE departments SET manager_user_id = 'USR-1038' WHERE id = 'DEPT-009'; -- Leila Hassan, IT Administrator
+UPDATE departments SET manager_user_id = 'USR-1040' WHERE id = 'DEPT-010'; -- Natalie Fournier, Legal Counsel
+
+-- ============================================================
 -- Projects (20) — distributed across departments, valid owner FK
 -- ============================================================
 INSERT INTO projects (id, name, department_id, owner_user_id, status, start_date, end_date, created_at, updated_at) VALUES
@@ -95,3 +112,28 @@ INSERT INTO projects (id, name, department_id, owner_user_id, status, start_date
 ('PRJ-2018', 'Customer Health Score Model',     'DEPT-008', 'USR-1034', 'IN_PROGRESS', '2025-08-01', NULL,         '2025-07-20 09:00:00', '2026-08-07 09:00:00'),
 ('PRJ-2019', 'Helpdesk Tooling Upgrade',        'DEPT-009', 'USR-1038', 'CANCELLED',   '2024-12-01', '2025-01-10', '2024-11-15 09:00:00', '2025-01-10 09:00:00'),
 ('PRJ-2020', 'Vendor Contract Review',          'DEPT-010', 'USR-1040', 'PLANNED',     '2026-11-15', NULL,         '2026-08-01 09:00:00', '2026-08-01 09:00:00');
+
+-- ============================================================
+-- Project members (2-4 teammates per project, drawn from the same
+-- department, excluding the owner who is already tracked separately)
+-- ============================================================
+INSERT INTO project_members (project_id, user_id) VALUES
+('PRJ-2001', 'USR-1001'), ('PRJ-2001', 'USR-1002'), ('PRJ-2001', 'USR-1005'),
+('PRJ-2002', 'USR-1002'), ('PRJ-2002', 'USR-1009'),
+('PRJ-2003', 'USR-1004'), ('PRJ-2003', 'USR-1008'),
+('PRJ-2004', 'USR-1009'), ('PRJ-2004', 'USR-1006'),
+('PRJ-2005', 'USR-1011'), ('PRJ-2005', 'USR-1014'),
+('PRJ-2006', 'USR-1012'), ('PRJ-2006', 'USR-1014'),
+('PRJ-2007', 'USR-1010'), ('PRJ-2007', 'USR-1013'),
+('PRJ-2008', 'USR-1016'), ('PRJ-2008', 'USR-1018'),
+('PRJ-2009', 'USR-1015'),
+('PRJ-2010', 'USR-1017'),
+('PRJ-2011', 'USR-1020'), ('PRJ-2011', 'USR-1021'),
+('PRJ-2012', 'USR-1022'), ('PRJ-2012', 'USR-1024'),
+('PRJ-2013', 'USR-1019'), ('PRJ-2013', 'USR-1021'),
+('PRJ-2014', 'USR-1026'), ('PRJ-2014', 'USR-1027'),
+('PRJ-2015', 'USR-1027'),
+('PRJ-2016', 'USR-1030'),
+('PRJ-2017', 'USR-1032'), ('PRJ-2017', 'USR-1033'),
+('PRJ-2018', 'USR-1035'), ('PRJ-2018', 'USR-1036'),
+('PRJ-2019', 'USR-1039');

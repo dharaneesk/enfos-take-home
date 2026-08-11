@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, String> {
 
-    @Query("SELECT new com.enfos.reporting.dto.UserDto(u.id, u.name, u.email, u.role, u.status, u.createdDate, d.name) " +
+    @Query("SELECT new com.enfos.reporting.dto.UserDto(u.id, u.name, u.email, u.role, u.status, u.createdDate, d.name, d.id) " +
             "FROM User u LEFT JOIN u.department d " +
             "ORDER BY u.id")
     List<UserDto> findAllReportRows();

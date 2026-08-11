@@ -19,12 +19,14 @@ export interface UserRow {
   status: UserStatus;
   createdDate: string;
   department: string | null;
+  departmentId: string | null;
 }
 
 export interface DepartmentRow {
   id: string;
   name: string;
-  manager: string;
+  manager: string | null;
+  managerId: string | null;
   employeeCount: number;
   location: string;
 }
@@ -40,10 +42,13 @@ export interface ProjectRow {
   id: string;
   name: string;
   department: string;
+  departmentId: string;
   owner: string;
+  ownerId: string;
   status: ProjectStatus;
   startDate: string;
   endDate: string | null;
+  memberIds: string[];
 }
 
 export type ReportRow = UserRow | DepartmentRow | ProjectRow;

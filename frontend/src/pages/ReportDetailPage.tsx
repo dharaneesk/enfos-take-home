@@ -72,7 +72,7 @@ const DEPARTMENT_COLUMNS: DataTableColumn<DepartmentRow>[] = [
   {
     key: "manager",
     header: "Manager",
-    accessor: (row) => row.manager,
+    accessor: (row) => row.manager ?? "—",
     sortValue: (row) => row.manager,
   },
   {
@@ -152,7 +152,7 @@ function usersSearchText(row: UserRow): string {
 }
 
 function departmentsSearchText(row: DepartmentRow): string {
-  return [row.id, row.name, row.manager, row.location].join(" ").toLowerCase();
+  return [row.id, row.name, row.manager ?? "", row.location].join(" ").toLowerCase();
 }
 
 function projectsSearchText(row: ProjectRow): string {
@@ -165,6 +165,7 @@ interface ReportBodyProps<T> {
   query: UseQueryResult<T[], Error>;
   columns: DataTableColumn<T>[];
   getRowId: (row: T) => string;
+  getRowHref: (row: T) => string;
   getSearchText: (row: T) => string;
   search: string;
   onSearchChange: (value: string) => void;
@@ -176,6 +177,7 @@ function ReportBody<T>({
   query,
   columns,
   getRowId,
+  getRowHref,
   getSearchText,
   search,
   onSearchChange,
@@ -220,7 +222,12 @@ function ReportBody<T>({
 
       {data &&
         (filteredRows.length > 0 ? (
-          <DataTable columns={columns} rows={filteredRows} getRowId={getRowId} />
+          <DataTable
+            columns={columns}
+            rows={filteredRows}
+            getRowId={getRowId}
+            getRowHref={getRowHref}
+          />
         ) : data.length === 0 ? (
           <EmptyState
             title={`No ${emptyLabel} yet`}
@@ -286,6 +293,7 @@ export function ReportDetailPage() {
           query={usersQuery}
           columns={USER_COLUMNS}
           getRowId={(row) => row.id}
+          getRowHref={(row) => `/users/${row.id}`}
           getSearchText={usersSearchText}
           search={search}
           onSearchChange={setSearch}
@@ -298,6 +306,7 @@ export function ReportDetailPage() {
           query={departmentsQuery}
           columns={DEPARTMENT_COLUMNS}
           getRowId={(row) => row.id}
+          getRowHref={(row) => `/departments/${row.id}`}
           getSearchText={departmentsSearchText}
           search={search}
           onSearchChange={setSearch}
@@ -310,6 +319,7 @@ export function ReportDetailPage() {
           query={projectsQuery}
           columns={PROJECT_COLUMNS}
           getRowId={(row) => row.id}
+          getRowHref={(row) => `/projects/${row.id}`}
           getSearchText={projectsSearchText}
           search={search}
           onSearchChange={setSearch}

@@ -2,12 +2,15 @@ package com.enfos.reporting.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import jakarta.persistence.EntityListeners;
 
 import java.time.Instant;
 
@@ -23,8 +26,9 @@ public class Department {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "manager_name", nullable = false)
-    private String managerName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_user_id", nullable = true)
+    private User manager;
 
     @Column(nullable = false)
     private String location;
@@ -53,12 +57,12 @@ public class Department {
         this.name = name;
     }
 
-    public String getManagerName() {
-        return managerName;
+    public User getManager() {
+        return manager;
     }
 
-    public void setManagerName(String managerName) {
-        this.managerName = managerName;
+    public void setManager(User manager) {
+        this.manager = manager;
     }
 
     public String getLocation() {
