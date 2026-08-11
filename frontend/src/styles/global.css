@@ -339,6 +339,40 @@ input {
   border-bottom: 1px solid var(--border);
 }
 
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.sort-button:hover {
+  color: var(--text-primary);
+}
+
+.sort-icon {
+  display: inline-flex;
+  color: var(--border);
+  transition: color var(--transition-fast);
+}
+
+.sort-button:hover .sort-icon {
+  color: var(--text-secondary);
+}
+
+.sort-button--active,
+.sort-button--active .sort-icon {
+  color: var(--accent);
+}
+
 .data-table tbody td {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);

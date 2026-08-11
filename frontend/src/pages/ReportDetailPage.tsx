@@ -35,20 +35,23 @@ const USER_COLUMNS: DataTableColumn<UserRow>[] = [
     header: "User ID",
     sticky: true,
     accessor: (row) => <span className="cell-id">{row.id}</span>,
+    sortValue: (row) => row.id,
   },
-  { key: "name", header: "Name", accessor: (row) => row.name },
-  { key: "email", header: "Email", accessor: (row) => row.email },
-  { key: "role", header: "Role", accessor: (row) => row.role },
+  { key: "name", header: "Name", accessor: (row) => row.name, sortValue: (row) => row.name },
+  { key: "email", header: "Email", accessor: (row) => row.email, sortValue: (row) => row.email },
+  { key: "role", header: "Role", accessor: (row) => row.role, sortValue: (row) => row.role },
   {
     key: "status",
     header: "Status",
     accessor: (row) => <StatusBadge status={row.status} />,
+    sortValue: (row) => row.status,
   },
   {
     key: "createdDate",
     header: "Created Date",
     mono: true,
     accessor: (row) => formatDate(row.createdDate),
+    sortValue: (row) => row.createdDate,
   },
 ];
 
@@ -58,16 +61,33 @@ const DEPARTMENT_COLUMNS: DataTableColumn<DepartmentRow>[] = [
     header: "Department ID",
     sticky: true,
     accessor: (row) => <span className="cell-id">{row.id}</span>,
+    sortValue: (row) => row.id,
   },
-  { key: "name", header: "Department Name", accessor: (row) => row.name },
-  { key: "manager", header: "Manager", accessor: (row) => row.manager },
+  {
+    key: "name",
+    header: "Department Name",
+    accessor: (row) => row.name,
+    sortValue: (row) => row.name,
+  },
+  {
+    key: "manager",
+    header: "Manager",
+    accessor: (row) => row.manager,
+    sortValue: (row) => row.manager,
+  },
   {
     key: "employeeCount",
     header: "Employee Count",
     mono: true,
     accessor: (row) => row.employeeCount,
+    sortValue: (row) => row.employeeCount,
   },
-  { key: "location", header: "Location", accessor: (row) => row.location },
+  {
+    key: "location",
+    header: "Location",
+    accessor: (row) => row.location,
+    sortValue: (row) => row.location,
+  },
 ];
 
 const PROJECT_COLUMNS: DataTableColumn<ProjectRow>[] = [
@@ -76,26 +96,40 @@ const PROJECT_COLUMNS: DataTableColumn<ProjectRow>[] = [
     header: "Project ID",
     sticky: true,
     accessor: (row) => <span className="cell-id">{row.id}</span>,
+    sortValue: (row) => row.id,
   },
-  { key: "name", header: "Project Name", accessor: (row) => row.name },
-  { key: "department", header: "Department", accessor: (row) => row.department },
-  { key: "owner", header: "Owner", accessor: (row) => row.owner },
+  {
+    key: "name",
+    header: "Project Name",
+    accessor: (row) => row.name,
+    sortValue: (row) => row.name,
+  },
+  {
+    key: "department",
+    header: "Department",
+    accessor: (row) => row.department,
+    sortValue: (row) => row.department,
+  },
+  { key: "owner", header: "Owner", accessor: (row) => row.owner, sortValue: (row) => row.owner },
   {
     key: "status",
     header: "Status",
     accessor: (row) => <StatusBadge status={row.status} />,
+    sortValue: (row) => row.status,
   },
   {
     key: "startDate",
     header: "Start Date",
     mono: true,
     accessor: (row) => formatDate(row.startDate),
+    sortValue: (row) => row.startDate,
   },
   {
     key: "endDate",
     header: "End Date",
     mono: true,
     accessor: (row) => formatDate(row.endDate),
+    sortValue: (row) => row.endDate,
   },
 ];
 
