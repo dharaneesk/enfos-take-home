@@ -1,0 +1,172 @@
+ENFOS REPORTING PORTAL — ASSUMPTIONS & TRADEOFFS
+=================================================
+
+This file explains the deliberate choices behind the build and the
+tradeoffs they carry, so a reviewer isn't left guessing why something
+was done a particular way. Grouped by area.
+
+
+1. DATA MODEL
+--------------
+
+- Primary keys are human-readable business keys (DEPT-001, USR-1001,
+  PRJ-2001), not surrogate auto-increment integers. This was an explicit
+  requirement: these IDs are what's displayed in the report tables.
+  Tradeoff: the format (prefix + zero-padded number) is a seed-data
+  convention, not enforced by a DB constraint — nothing stops a future
+  insert from breaking the pattern.
+
+- Department "Employee Count" is computed at query time
+  (COUNT(users) WHERE department_id = ?), never stored as a redundant
+  column. Avoids denormalization drift (count silently going stale as
+  users move departments); the cost is a GROUP BY on every read, which
+  is irrelevant at this data volume (tens of rows).
+
+- Each report's "last updated" on the landing page is a real
+  MAX(updated_at) across that report's rows, not hardcoded — timestamps
+  are auto-managed on insert/update via JPA auditing
+  (@CreatedDate/@LastModifiedDate), so this reflects genuine row
+  mutation, not deploy time.
+
+- Department.manager is a real foreign key to a User, not a free-text
+  name. This wasn't the original design — it started as a plain
+  manager_name string per the initial spec, and was changed once the
+  entity drill-down feature was requested, so "the manager" could be a
+  clickable, real person rather than display-only text. Seed data
+  assigns each department's manager to a user who already exists in
+  that department's roster (e.g. Engineering's manager is USR-1003
+  Chloe Martin, Engineering Manager) rather than inventing a separate,
+  unlinked person. That's a seed-data choice, not a hard rule the
+  schema enforces — manager_user_id is nullable and isn't required to
+  point at a user in the same department.
+
+- project_members is a many-to-many join table (Project <-> User) added
+  specifically to support "who's working on this project," distinct
+  from ownership. The original spec only modeled a single project
+  owner FK; team membership didn't exist until the drill-down feature
+  needed a real "people on this project" relationship instead of
+  reusing the owner. Seed data excludes the owner from the members list
+  (so the UI doesn't show the same person twice under two different
+  headings), but that's a display choice — the schema doesn't forbid a
+  user being both owner and a row in project_members.
+
+- "Projects a user is working on" (shown on a user's detail page) is
+  defined as: projects where they're the owner, OR listed in
+  project_members. There's no "role on the project" field — ownership
+  and membership are the only two relationship types modeled.
+
+- Users.department_id is nullable (a user can be unassigned); every
+  other required relationship (project -> department, project -> owner)
+  is NOT NULL.
+
+
+2. API DESIGN
+--------------
+
+- Only the original 4 read endpoints exist
+  (GET /api/reports, /api/reports/users, /api/reports/departments,
+  /api/reports/projects). No endpoints were added to support entity
+  detail pages or drill-down navigation, by design. Instead, the
+  existing DTOs were enriched with the foreign-key fields needed to
+  cross-reference records client-side: departmentId on users,
+  departmentId/ownerId/memberIds on projects, managerId on departments.
+  A detail page (e.g. a department's page) fetches the same 3 report
+  lists the tables use and does plain array filtering
+  (e.g. projects.filter(p => p.departmentId === id)) to find related
+  records — no server-side joins beyond what already existed for the
+  table views.
+  Tradeoff: this pushes "join" work to the browser and means a detail
+  page's first load fetches 3 endpoints instead of 1. Irrelevant here
+  (three tiny JSON payloads, tens of rows each) but wouldn't scale to a
+  real dataset without pagination and dedicated lookup endpoints.
+
+- No write endpoints (POST/PUT/DELETE) — explicitly a read-only
+  reporting tool, per the original spec and unchanged since.
+
+- No pagination or server-side filtering. Full lists are returned and
+  filtered/sorted client-side. Reasonable at this scale (10 departments,
+  ~42 users, ~20 projects); would need to change for a real production
+  dataset.
+
+- Errors return a consistent JSON shape (timestamp, status, error,
+  message, path) via a single @RestControllerAdvice, including for
+  unmatched routes (404), not just domain exceptions.
+
+
+3. AUTH & SECURITY
+--------------------
+
+- No authentication, by design — the portal is intentionally open for
+  this assessment. No Spring Security, no login gate, no sessions.
+
+- The sidebar's "Admin" user block is cosmetic only — a static label,
+  not a real logged-in identity. There's no user model, no session, no
+  way to be a different user.
+
+- "Log out" doesn't end a real session (there isn't one). It calls
+  window.close(), which browsers generally block for a tab that wasn't
+  opened by script (i.e. any normally-navigated tab) — so in practice it
+  falls back to a full-screen "you've been signed out" message instead
+  of silently doing nothing. This is a deliberate UI-only affordance,
+  not a security boundary.
+
+
+4. FRONTEND
+------------
+
+- Client-side search (landing page + every report table) filters
+  already-fetched data in memory; sorting (every column, every table)
+  is also client-side, single-column, and cycles
+  ascending -> descending -> unsorted. Neither is persisted across
+  navigation or reload — revisiting a report starts unsorted/unfiltered.
+
+- Data fetching goes through TanStack Query with the default staleTime
+  (0). Cached data for a given report renders instantly on repeat
+  visits, but a background revalidation request still fires each time
+  since it's considered stale immediately. No caching was tuned beyond
+  disabling refetch-on-window-focus, since payloads are trivially small.
+
+- Entity detail pages (useAllReports) always fetch all 3 report lists
+  unconditionally, even if a page only strictly needs 2 of them (e.g. a
+  department page doesn't need the full projects list until it filters
+  by department). Simpler code at the cost of one theoretically
+  avoidable request on a cold cache; not worth optimizing at this data
+  volume.
+
+- The sidebar's open/collapsed default is decided once on mount via
+  window.matchMedia (open on desktop, closed on mobile) — it does not
+  react live to a browser window being resized across the breakpoint
+  after the page has loaded.
+
+
+5. DOCKER / OPS
+-----------------
+
+- MySQL credentials (db enfos_reporting, user/password enfos/enfos) are
+  hardcoded defaults directly in docker-compose.yml specifically so
+  `docker compose up --build` works with zero setup from a clean
+  checkout. .env.example / .env are an optional override, never
+  required. These are not credentials meant for any real deployment.
+
+- CORS is only exercised by the `npm run dev` + separately-run-backend
+  local workflow. The Docker Compose deployment is same-origin (Nginx
+  proxies /api/* to the backend container), so no CORS is involved
+  there at all.
+
+- The MySQL data volume (enfos_mysql_data) persists across
+  `docker compose up`/`down` cycles by design, so restarting the stack
+  doesn't lose data or re-run migrations unnecessarily. Use
+  `docker compose down -v` to wipe it and reseed from scratch.
+
+
+6. SEED DATA
+-------------
+
+- All seed data (names, roles, dates, project assignments) is
+  fictional and illustrative, generated to look like a plausible
+  mid-size org — not real personnel data.
+
+- Team sizes are deliberately uneven (Engineering has 9 people, Legal
+  has 1) and a couple of users are left unassigned to any department,
+  to exercise the nullable department_id path and make the empty/sparse
+  UI states reachable without artificial test fixtures.
